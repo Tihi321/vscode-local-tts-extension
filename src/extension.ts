@@ -5,11 +5,16 @@ import { IncomingMessage } from "http";
 // Activation function called when extension is activated
 export function activate(context: vscode.ExtensionContext) {
   // Register the command to send text to Local TTS
-  const disposable = vscode.commands.registerCommand("vscode-local-tts.sendToLocalTTS", () => {
+  const sendDisposable = vscode.commands.registerCommand("vscode-local-tts.sendToLocalTTS", () => {
     sendToLocalTTS();
   });
 
-  context.subscriptions.push(disposable);
+  // Register the command to stop Local TTS
+  const stopDisposable = vscode.commands.registerCommand("vscode-local-tts.stopLocalTTS", () => {
+    stopLocalTTS();
+  });
+
+  context.subscriptions.push(sendDisposable, stopDisposable);
 }
 
 // Function to send selected text to local TTS
@@ -93,6 +98,74 @@ async function sendToLocalTTS() {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     vscode.window.showErrorMessage(`Failed to send to TTS: ${errorMessage}`);
     console.error("TTS Error:", error);
+  }
+}
+
+// Function to stop local TTS playback
+async function stopLocalTTS() {
+  // Get API port from configuration
+  const config = vscode.workspace.getConfiguration("vscode-local-tts");
+  const apiPort = config.get<string>("apiPort") || "7891";
+
+  try {
+    // Create status bar message
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    statusBarItem.text = `$(stop) Stopping TTS...`;
+    statusBarItem.show();
+
+    // Make HTTP request using Node.js http module
+    const postData = JSON.stringify({});
+
+    await new Promise<void>((resolve, reject) => {
+      const req = http.request(
+        {
+          hostname: "127.0.0.1",
+          port: apiPort,
+          path: "/stop",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(postData),
+          },
+        },
+        (res: IncomingMessage) => {
+          let data = "";
+
+          res.on("data", (chunk: Buffer) => {
+            data += chunk.toString();
+          });
+
+          res.on("end", () => {
+            if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+              resolve();
+            } else {
+              reject(new Error(`HTTP Error: ${res.statusCode}`));
+            }
+          });
+        }
+      );
+
+      req.on("error", (error: Error) => {
+        reject(error);
+      });
+
+      req.write(postData);
+      req.end();
+    });
+
+    // Hide status bar after a few seconds
+    setTimeout(() => {
+      statusBarItem.hide();
+      statusBarItem.dispose();
+    }, 3000);
+
+    // Show success message
+    vscode.window.showInformationMessage("TTS playback stopped successfully");
+  } catch (error) {
+    // Handle errors
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    vscode.window.showErrorMessage(`Failed to stop TTS: ${errorMessage}`);
+    console.error("TTS Stop Error:", error);
   }
 }
 

@@ -19,18 +19,27 @@
       {
         "command": "vscode-local-tts.sendToLocalTTS",
         "title": "Send to Local TTS"
+      },
+      {
+        "command": "vscode-local-tts.stopLocalTTS",
+        "title": "Stop Local TTS"
       }
     ],
     "menus": {
       "editor/context": [
         {
           "submenu": "vscode-local-tts.submenu",
-          "when": "editorHasSelection"
+          "when": "true"
         }
       ],
       "vscode-local-tts.submenu": [
         {
           "command": "vscode-local-tts.sendToLocalTTS",
+          "group": "1_tts",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "vscode-local-tts.stopLocalTTS",
           "group": "1_tts"
         }
       ]
