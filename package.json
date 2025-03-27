@@ -1,0 +1,74 @@
+{
+  "name": "vscode-local-tts-extension",
+  "displayName": "Local TTS",
+  "description": "Send selected text to a local TTS service",
+  "version": "1.0.0",
+  "publisher": "TihomirSelak",
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-local-tts.sendToLocalTTS",
+        "title": "Send to Local TTS"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "vscode-local-tts.submenu",
+          "when": "editorHasSelection"
+        }
+      ],
+      "vscode-local-tts.submenu": [
+        {
+          "command": "vscode-local-tts.sendToLocalTTS",
+          "group": "1_tts"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "vscode-local-tts.submenu",
+        "label": "Text-to-Speech"
+      }
+    ],
+    "configuration": {
+      "title": "Local TTS",
+      "properties": {
+        "vscode-local-tts.apiPort": {
+          "type": "string",
+          "default": "7891",
+          "description": "Port number for local TTS API"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package -o dist/vscode-local-tts-extension.vsix"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.50.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "@vscode/vsce": "^2.18.0",
+    "eslint": "^8.18.0",
+    "typescript": "^4.7.4"
+  },
+  "repository": "git@github.com:Tihi321/vscode-local-tts-extension.git",
+  "author": "Tihomir Selak <tknox.dr@gmail.com>",
+  "license": "MIT"
+}
